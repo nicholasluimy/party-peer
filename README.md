@@ -16,5 +16,21 @@ Before you run the tests, it's recommended you create a separate firebase projec
 
 These test will be refactored to use mocking library in future.
 
+add a `firebase.env.json` under project root with firebase configurations:
+```json
+{
+    "testing": {
+        "apiKey": "...",
+        "authDomain": "...",
+        "databaseURL": "...",
+        "projectId": "...",
+        "storageBucket": "...",
+        "messagingSenderId": "..."
+    },
+    "production": {}
+}
+
+```
+
 #### `yarn build`
 Generate javascript build from the typescript source.
