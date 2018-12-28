@@ -1,98 +1,98 @@
-import Utils from "./Utils"
-import { FirebaseFirestore } from "@firebase/firestore-types"
+import { FirebaseFirestore } from "@firebase/firestore-types";
+import Utils from "./Utils";
 
 export default class PartyPeer {
-    readonly PARTY_COLLECTION_ID = "parties"
-    readonly PEER_COLLECTION_ID = "peers"
-    readonly IS_INITIATOR: boolean
+    public readonly PARTY_COLLECTION_ID = "parties";
+    public readonly PEER_COLLECTION_ID = "peers";
+    public readonly IS_INITIATOR: boolean;
 
-    private firestore: FirebaseFirestore
-    private db = (collectionPath: string) =>
-        this.firestore.collection(collectionPath)
+    private firestore: FirebaseFirestore;
 
     constructor(firestore: FirebaseFirestore, isInitiator = false) {
-        this.firestore = firestore
-        this.IS_INITIATOR = isInitiator
+        this.firestore = firestore;
+        this.IS_INITIATOR = isInitiator;
     }
 
     public create(passcode = Utils.generateRandomSixDigits()) {
         return this.db(this.PARTY_COLLECTION_ID)
             .doc(passcode)
             .set({
-                createTime: Date.now()
-            })
+                createTime: Date.now(),
+            });
     }
 
     public async party(passcode: string) {
         return this.db(this.PARTY_COLLECTION_ID)
             .doc(passcode)
-            .get()
+            .get();
     }
 
     public isPartyExists(passcode: string) {
         return this.party(passcode)
-            .then(d => d.exists)
-            .catch(() => false)
+            .then((d) => d.exists)
+            .catch(() => false);
     }
 
     public async join(passcode: string, joiner: string) {
-        if (!(await this.isPartyExists(passcode)))
-            throw new Error(`Invalid passcode '${passcode}'.`)
+        if (!(await this.isPartyExists(passcode))) {
+            throw new Error(`Invalid passcode '${passcode}'.`);
+        }
 
         return this.db(
-            `${this.PARTY_COLLECTION_ID}/${passcode}/${this.PEER_COLLECTION_ID}`
+            `${this.PARTY_COLLECTION_ID}/${passcode}/${this.PEER_COLLECTION_ID}`,
         )
             .doc(joiner)
             .set({
-                createTime: Date.now()
-            })
+                createTime: Date.now(),
+            });
     }
 
     public async peers(passcode: string) {
-        if (!(await this.isPartyExists(passcode)))
-            throw new Error(`Invalid passcode '${passcode}'.`)
+        if (!(await this.isPartyExists(passcode))) {
+            throw new Error(`Invalid passcode '${passcode}'.`);
+        }
 
         return this.db(
-            `${this.PARTY_COLLECTION_ID}/${passcode}/${this.PEER_COLLECTION_ID}`
-        ).get()
+            `${this.PARTY_COLLECTION_ID}/${passcode}/${this.PEER_COLLECTION_ID}`,
+        ).get();
     }
 
     public peer(passcode: string, joiner: string) {
         return this.db(
-            `${this.PARTY_COLLECTION_ID}/${passcode}/${this.PEER_COLLECTION_ID}`
+            `${this.PARTY_COLLECTION_ID}/${passcode}/${this.PEER_COLLECTION_ID}`,
         )
             .doc(joiner)
-            .get()
+            .get();
     }
 
     public writeOffer(passcode: string, joiner: string, offer: string) {
         return this.db(
-            `${this.PARTY_COLLECTION_ID}/${passcode}/${this.PEER_COLLECTION_ID}`
+            `${this.PARTY_COLLECTION_ID}/${passcode}/${this.PEER_COLLECTION_ID}`,
         )
             .doc(joiner)
             .update({
-                offer: offer
-            })
+                offer,
+            });
     }
 
     public async readOffer(passcode: string, joiner: string) {
-        const result = await this.peer(passcode, joiner)
-        return result.data()!.offer as string
+        const result = await this.peer(passcode, joiner);
+        return result.data()!.offer as string;
     }
 
     public writeAnswer(passcode: string, joiner: string, answer: string) {
         return this.db(
-            `${this.PARTY_COLLECTION_ID}/${passcode}/${this.PEER_COLLECTION_ID}`
+            `${this.PARTY_COLLECTION_ID}/${passcode}/${this.PEER_COLLECTION_ID}`,
         )
             .doc(joiner)
             .update({
-                answer: answer
-            })
+                answer,
+            });
     }
 
     public async readAnswer(passcode: string, joiner: string) {
-        const result = await this.peer(passcode, joiner)
-        return result.data()!.answer as string
+        const result = await this.peer(passcode, joiner);
+        return result.data()!.answer as string;
     }
 
     public listen(passcode: string, joiner?: string) {
@@ -100,9 +100,9 @@ export default class PartyPeer {
             return this.db(
                 `${this.PARTY_COLLECTION_ID}/${passcode}/${
                     this.PEER_COLLECTION_ID
-                }`
-            ).onSnapshot(snapshot => {
-                snapshot.docChanges().forEach(async change => {
+                }`,
+            ).onSnapshot((snapshot) => {
+                snapshot.docChanges().forEach(async (change) => {
                     switch (change.type) {
                         case "added":
                             // peer has joined the party, initiator update offer
@@ -110,37 +110,41 @@ export default class PartyPeer {
                             await this.writeOffer(
                                 passcode,
                                 change.doc.id,
-                                "offer"
-                            )
-                            break
+                                "offer",
+                            );
+                            break;
                         case "modified":
-                            const answer = change.doc.data().answer
+                            const answer = change.doc.data().answer;
 
                             if (answer) {
-                                console.log(answer)
+                                /* tslint:disable-next-line:no-console */
+                                console.log(answer);
                             }
 
-                            break
+                            break;
                         case "removed":
-                            break
+                            break;
                     }
-                })
-            })
+                });
+            });
         } else {
             return this.db(
                 `${this.PARTY_COLLECTION_ID}/${passcode}/${
                     this.PEER_COLLECTION_ID
-                }`
+                }`,
             )
                 .doc(joiner)
-                .onSnapshot(snapshot => {
-                    const offer = snapshot.data()!.offer
+                .onSnapshot((snapshot) => {
+                    const offer = snapshot.data()!.offer;
 
                     if (offer) {
-                        console.log(offer)
-                        this.writeAnswer(passcode, snapshot.id, "answer")
+                        /* tslint:disable-next-line:no-console */
+                        console.log(offer);
+                        this.writeAnswer(passcode, snapshot.id, "answer");
                     }
-                })
+                });
         }
     }
+    private db = (collectionPath: string) =>
+        this.firestore.collection(collectionPath)
 }

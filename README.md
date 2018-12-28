@@ -6,7 +6,7 @@
 This is will pull in all dependencies required for the project.
 
 ### Setup a Firebase Project
-1. Go to [firebase.google.com](firebase.google.com) and create a new project.
+1. Go to [firebase.google.com](https://firebase.google.com) and create a new project.
 2. Select Firestore and create the database under the newly created project.
 3. Open your terminal, run `firebase init`
 4. Select your project, and choose hosting & firestore.
