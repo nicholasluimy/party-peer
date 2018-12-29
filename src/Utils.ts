@@ -14,4 +14,16 @@ export default class Utils {
             return v.toString(16);
         });
     }
+
+    // Object.values is only available in ES2017
+    public static getDictionaryValues(dict: object) {
+        const dictVals: any[] = [];
+        for (const key in dict) {
+            if (dict.hasOwnProperty(key)) {
+                // @ts-ignore
+                dictVals.push(dict[key]);
+            }
+        }
+        return dictVals;
+    }
 }
